@@ -1,5 +1,5 @@
 from shared_variables import Shared_Variables
-from camera_handler import Web_Camera
+from camera_handler import *
 from vizualise import Vizualise
 from obj_detection import Obj_Detection
 from threading import Thread
