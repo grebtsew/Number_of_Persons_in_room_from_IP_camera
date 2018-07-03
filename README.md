@@ -1,5 +1,11 @@
 # Number of persons in room from IP camera
-Calculate an detect number of persons in a room with Tensorflow object detection.
+A multithreaded program that calculate and detect number of persons in a room with Tensorflow object detection.
+
+# Upcoming!
+This code will soon be updated with the following features:
+- handle multiple cameras
+- tracking to increase preformance
+- implement a calman filter to get better result value
 
 # Source
 This codes object detection assume from:
