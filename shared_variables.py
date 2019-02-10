@@ -19,7 +19,9 @@ class Shared_Variables():
     OutputFrame_list = list()
     number_of_persons = 0
 
-    def __init__(self, name=None):
+    image_of_detections = list() # [[img id1....],[img id2...] ]
+
+    def __init__(self, name=None, amount= 1):
         Thread.__init__(self)
         self.name = name
         self._initialized = 1

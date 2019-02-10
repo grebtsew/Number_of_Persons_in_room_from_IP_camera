@@ -16,13 +16,15 @@ class Obj_Detection(Thread):
     PATH_TO_LABELS = os.path.join(CWD_PATH,'object_detection', 'data', 'mscoco_label_map.pbtxt')
     NUM_CLASSES = 90
 
-    def __init__(self, name=None, shared_variables = None):
+    def __init__(self, id, model = 'ssd_mobilenet_v1_coco_11_06_2017/frozen_inference_graph.pb', name=None, shared_variables = None ):
         Thread.__init__(self)
         self.name = name
         self.shared_variables = shared_variables
+        self.id = id
 
     def load_modell(self):
         # Load modell
+        print("Loading modell")
         detection_graph = tf.Graph()
         with detection_graph.as_default():
             od_graph_def = tf.GraphDef()
@@ -42,9 +44,10 @@ class Obj_Detection(Thread):
 
         sess = tf.Session(graph=detection_graph)
 
+        print("Starting detection")
         while True:
-            if(len(self.shared_variables.OutputFrame_list) > 0):
-                frame = self.shared_variables.OutputFrame_list[0].frame
+            if self.shared_variables.OutputFrame_list[self.id] is not None:
+                frame = self.shared_variables.OutputFrame_list[self.id].frame
 
                 if( frame is not None):
                     image_np = frame
@@ -53,6 +56,7 @@ class Obj_Detection(Thread):
                     image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
                     # Each box represents a part of the image where a particular object was detected.
                     boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+
                     # Each score represent how level of confidence for each of the objects.
                     # Score is shown on the result image, together with the class label.
                     scores = detection_graph.get_tensor_by_name('detection_scores:0')
@@ -61,6 +65,7 @@ class Obj_Detection(Thread):
                     num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
                     # Actual detection.
-                    self.shared_variables.OutputFrame_list[0].boxes = sess.run(
+                    self.shared_variables.OutputFrame_list[self.id].boxes = sess.run(
                       [boxes, scores, classes, num_detections],
                       feed_dict={image_tensor: image_np_expanded})
+                     
