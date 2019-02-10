@@ -36,6 +36,6 @@ def create_instances( source_list ):
 
 # Main start here
 if __name__ == "__main__":
-    source_list = [0, 1] # must be of size amount atleast!
+    source_list = [0] # must be of size amount atleast!
 
     create_instances( source_list)
