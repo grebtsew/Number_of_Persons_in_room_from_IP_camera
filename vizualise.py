@@ -4,6 +4,7 @@ from utils import visualization_utils as vis_util
 import numpy as np
 import statistics
 
+
 class Vizualise(Thread):
 
     def __init__(self, name=None, id = 0, shared_variables = None):
@@ -27,6 +28,20 @@ class Vizualise(Thread):
         commutative_image_diff = (img_hist_diff / 10) + img_template_diff
         return commutative_image_diff
 
+    def imcrop(self, img, bbox):
+        x1,y1,x2,y2 = bbox
+        if x1 < 0 or y1 < 0 or x2 > img.shape[1] or y2 > img.shape[0]:
+             img, x1, x2, y1, y2 = pad_img_to_fit_bbox(img, x1, x2, y1, y2)
+        return img[y1:y2, x1:x2, :]
+
+    def pad_img_to_fit_bbox(self, img, x1, x2, y1, y2):
+        img = np.pad(img, ((np.abs(np.minimum(0, y1)), np.maximum(y2 - img.shape[0], 0)),
+                   (np.abs(np.minimum(0, x1)), np.maximum(x2 - img.shape[1], 0)), (0,0)), mode="constant")
+        y1 += np.abs(np.minimum(0, y1))
+        y2 += np.abs(np.minimum(0, y1))
+        x1 += np.abs(np.minimum(0, x1))
+        x2 += np.abs(np.minimum(0, x1))
+        return img, x1, x2, y1, y2
 
     def run(self):
 
@@ -65,14 +80,21 @@ class Vizualise(Thread):
                                 if classes[i] in self.shared_variables.category_index.keys():
                                     class_name = self.shared_variables.category_index[classes[i]]['name']
                                     if(class_name == 'person'):
+                                        crop_img = None
                                         # crop detection box
                                         height, width, channels = frame.shape
 
-                                        x =int( self.shared_variables.OutputFrame_list[self.id].boxes[0][0][0][0]*width)
-                                        y =int( self.shared_variables.OutputFrame_list[self.id].boxes[0][0][0][1]*height)
-                                        xx =int( self.shared_variables.OutputFrame_list[self.id].boxes[0][0][0][2]*width)
-                                        yy =int( self.shared_variables.OutputFrame_list[self.id].boxes[0][0][0][3]*height)
-                                        crop_img = frame[x:xx, y:yy]
+                                        x = (self.shared_variables.OutputFrame_list[self.id].boxes[0][0][i][0]*width).astype(int) -1
+                                        y =( self.shared_variables.OutputFrame_list[self.id].boxes[0][0][i][1]*height).astype(int) -1
+                                        xx =( self.shared_variables.OutputFrame_list[self.id].boxes[0][0][i][2]*width).astype(int) -1
+                                        yy =( self.shared_variables.OutputFrame_list[self.id].boxes[0][0][i][3]*height).astype(int)-1
+
+                                        crop_img = self.imcrop(frame, (x,y,xx,yy)) #frame[y:yy,x:xx ]
+
+                                        # Create a named colour
+                                        red = [0,150,0]
+                                        frame[y,x] = red
+                                        frame[yy,xx] = red
 
                                         # check if persons exist on other images
                                         #if len(self.shared_variables.image_of_detections) > 0:
