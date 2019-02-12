@@ -28,20 +28,7 @@ class Vizualise(Thread):
         commutative_image_diff = (img_hist_diff / 10) + img_template_diff
         return commutative_image_diff
 
-    def imcrop(self, img, bbox):
-        x1,y1,x2,y2 = bbox
-        if x1 < 0 or y1 < 0 or x2 > img.shape[1] or y2 > img.shape[0]:
-             img, x1, x2, y1, y2 = pad_img_to_fit_bbox(img, x1, x2, y1, y2)
-        return img[y1:y2, x1:x2, :]
 
-    def pad_img_to_fit_bbox(self, img, x1, x2, y1, y2):
-        img = np.pad(img, ((np.abs(np.minimum(0, y1)), np.maximum(y2 - img.shape[0], 0)),
-                   (np.abs(np.minimum(0, x1)), np.maximum(x2 - img.shape[1], 0)), (0,0)), mode="constant")
-        y1 += np.abs(np.minimum(0, y1))
-        y2 += np.abs(np.minimum(0, y1))
-        x1 += np.abs(np.minimum(0, x1))
-        x2 += np.abs(np.minimum(0, x1))
-        return img, x1, x2, y1, y2
 
     def run(self):
 
@@ -61,9 +48,10 @@ class Vizualise(Thread):
                     else:
                         scores =np.squeeze(self.shared_variables.OutputFrame_list[self.id].boxes[1])
                         classes = np.squeeze(self.shared_variables.OutputFrame_list[self.id].boxes[2]).astype(np.int32)
+                        boxes = np.squeeze(self.shared_variables.OutputFrame_list[self.id].boxes[0])
                         vis_util.visualize_boxes_and_labels_on_image_array(
                         frame,
-                        np.squeeze(self.shared_variables.OutputFrame_list[self.id].boxes[0]),
+                        boxes,
                         classes,
                         scores,
                         self.shared_variables.category_index,
@@ -82,19 +70,16 @@ class Vizualise(Thread):
                                     if(class_name == 'person'):
                                         crop_img = None
                                         # crop detection box
-                                        height, width, channels = frame.shape
 
-                                        x = (self.shared_variables.OutputFrame_list[self.id].boxes[0][0][i][0]*width).astype(int) -1
-                                        y =( self.shared_variables.OutputFrame_list[self.id].boxes[0][0][i][1]*height).astype(int) -1
-                                        xx =( self.shared_variables.OutputFrame_list[self.id].boxes[0][0][i][2]*width).astype(int) -1
-                                        yy =( self.shared_variables.OutputFrame_list[self.id].boxes[0][0][i][3]*height).astype(int)-1
+                                        width,height, channels = frame.shape
+                                        height -= 1
+                                        width -= 1
 
-                                        crop_img = self.imcrop(frame, (x,y,xx,yy)) #frame[y:yy,x:xx ]
+                                        ymin, xmin, ymax, xmax = boxes[i]
+                                        (left, right, top, bottom) = (int(xmin * height), int(xmax * height),int( ymin * width),int( ymax * width))
 
-                                        # Create a named colour
-                                        red = [0,150,0]
-                                        frame[y,x] = red
-                                        frame[yy,xx] = red
+
+                                        crop_img = frame[top:bottom,left:right]
 
                                         # check if persons exist on other images
                                         #if len(self.shared_variables.image_of_detections) > 0:
@@ -108,7 +93,7 @@ class Vizualise(Thread):
 
                                                 for img in lis:
                                                     t = self.get_image_difference(img, crop_img)
-                                                    if t < 0.6: #90 % alike
+                                                    if t < 0.6: #60 % alike
                                                         already_detected = True
 
                                             k += 1
