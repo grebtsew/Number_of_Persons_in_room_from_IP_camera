@@ -7,12 +7,15 @@ import statistics
 
 class Vizualise(Thread):
 
-    def __init__(self, name=None, id = 0, shared_variables = None):
+    moved = False
+
+    def __init__(self, name=None, id = 0, shared_variables = None, pos = None):
         Thread.__init__(self)
         self.name = name
         self.id = id
         self.shared_variables = shared_variables
         self.filter = True
+        self.pos = pos
 
         self.shared_variables.image_of_detections.append(list())
 
@@ -133,6 +136,12 @@ class Vizualise(Thread):
 
                     cv2.putText(frame, str(self.shared_variables.number_of_persons), (10,100), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
                     cv2.imshow(str(self.id), frame)
+
+                    if self.moved is False and self.pos is not None:
+
+
+                        cv2.moveWindow(str(self.id), self.pos[0],self.pos[1])  # Move it to
+                        moved = True
 
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break

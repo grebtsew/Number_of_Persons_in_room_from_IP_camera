@@ -4,8 +4,8 @@ from shared_variables import OutputFrame
 
 class Web_Camera(Thread):
 
-    IMAGE_WIDTH = 640
-    IMAGE_HEIGHT = 480
+    IMAGE_WIDTH = 420
+    IMAGE_HEIGHT = 310
 
     def __init__(self, name=None, id = 0, cam_id = 0, shared_variables = None):
         Thread.__init__(self)
@@ -24,15 +24,15 @@ class Web_Camera(Thread):
             if(cap.isOpened()):
 
                 ret, frame = cap.read()
-                self.shared_variables.OutputFrame_list[self.id].frame = frame
+                self.shared_variables.OutputFrame_list[self.id].frame = cv2.resize(frame,(self.IMAGE_WIDTH, self.IMAGE_HEIGHT))
 
 
 
 
 class Ip_Camera(Thread):
 
-    IMAGE_WIDTH = 640
-    IMAGE_HEIGHT = 480
+    IMAGE_WIDTH = 420
+    IMAGE_HEIGHT = 310
 
     def __init__(self, name=None, id = 0, address = "rtsp://admin:modusproject@192.168.0.202:554/h264_vga.sdp", shared_variables = None):
         Thread.__init__(self)
@@ -41,15 +41,21 @@ class Ip_Camera(Thread):
         self.address = address
         self.shared_variables = shared_variables
 
+
         # Create first outputFrame
         self.shared_variables.OutputFrame_list.append(OutputFrame(self.IMAGE_HEIGHT, self.IMAGE_WIDTH))
 
     def run(self):
         cap = cv2.VideoCapture(self.address)
 
-        while True:
+        try:
+            while True:
 
-            if(cap.isOpened()):
-                ret, frame = cap.read()
+                if(cap.isOpened()):
+                    ret, frame = cap.read()
+                    self.shared_variables.OutputFrame_list[self.id].frame = cv2.resize(frame,(self.IMAGE_WIDTH, self.IMAGE_HEIGHT))
 
-                self.shared_variables.OutputFrame_list[self.id].frame = frame
+        except:
+            # arlo might have failed here so close capture and restart!
+            cap.close()
+            self.run()

@@ -1,7 +1,7 @@
 import cv2
 import time
 
-cap = cv2.VideoCapture("rtsp://admin:modusproject@192.168.0.202:554/h264_vga.sdp")
+cap = cv2.VideoCapture(1)
 print(cap)
 while True:
     ret, frame = cap.read()
