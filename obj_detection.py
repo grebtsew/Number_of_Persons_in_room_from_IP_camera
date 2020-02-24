@@ -22,27 +22,27 @@ class Obj_Detection(Thread):
         self.shared_variables = shared_variables
         self.id = id
 
-    def load_modell(self):
+    def load_model(self):
         # Load modell
-        print("Loading modell")
+        print("Loading model")
         detection_graph = tf.Graph()
         with detection_graph.as_default():
-            od_graph_def = tf.GraphDef()
-            with tf.gfile.GFile(self.PATH_TO_CKPT, 'rb') as fid:
+            od_graph_def = tf.compat.v1.GraphDef() # -> instead of tf.GraphDef() TF 2.0
+            with tf.compat.v2.io.gfile.GFile(self.PATH_TO_CKPT, 'rb') as fid: # -> instead of tf.gfile.GFile()
                 serialized_graph = fid.read()
                 od_graph_def.ParseFromString(serialized_graph)
                 tf.import_graph_def(od_graph_def, name='')
         return detection_graph
 
     def run(self):
-        detection_graph = self.load_modell()
+        detection_graph = self.load_model()
         label_map = label_map_util.load_labelmap(self.PATH_TO_LABELS)
         categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=self.NUM_CLASSES, use_display_name=True)
         category_index = label_map_util.create_category_index(categories)
 
         self.shared_variables.category_index = category_index
 
-        sess = tf.Session(graph=detection_graph)
+        sess = tf.compat.v1.Session(graph=detection_graph)
 
         print("Starting detection")
         while True:
@@ -68,4 +68,3 @@ class Obj_Detection(Thread):
                     self.shared_variables.OutputFrame_list[self.id].boxes = sess.run(
                       [boxes, scores, classes, num_detections],
                       feed_dict={image_tensor: image_np_expanded})
-                     

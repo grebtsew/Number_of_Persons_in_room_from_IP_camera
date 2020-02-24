@@ -9,64 +9,133 @@ from vizualise import Vizualise
 from vizualise_detections import Vizualise_Detections
 from obj_detection import Obj_Detection
 from threading import Thread
+from pyfiglet import Figlet
+from screeninfo import get_monitors
 
+"""
+Change These Variables
+"""
+source_list = [ 0 ] # these most be openable by cv2.VideoCapture!
 
+# Set both these to False in order to use default image sizes
+UTILIZE_ALL_MONITOR_SPACE = True # Set this to maximize visual size of all images
+VISUALIZATION_OFFSET_AND_SIZE = [0,0,640,480] # If UTILIZE_ALL_MONITOR_SPACE is false, use this size instead, set to False if you want all screen to load on eachother with camera default size.
+
+SHOW_ALL_PERSONS = False # Decide if you want to show all cropped images of detected persons
+
+use_arlo = False # Set to True if you want to scan for and use arlo cameras!
 USERNAME = '' # for arlo login
 PASSWORD = ''
 
-show_on_other_monitor = False
-use_arlo = False
-MONITOR_WIDTH = 1920;
-MONITOR_HEIGHT = 700;
-MONITOR_OFFSET = 100;
+DETECTION_OPTIMIZE_SIZE = [640,480] # Set size of images before prediction, Set to None if you want to use full size images
 
-def create_instances( source_list ):
+"""
+----- PROGRAM CODE -----
+"""
+
+def detect_monitors():
+    return get_monitors()
+
+def split_monitors(monitor_list, source_list):
+
+    # This function is an algoritm for splitting up any amount of screens into even boxes.
+    monitor_box_list = []
+    camera_amount = len(source_list)
+    monitor_amount = len(monitor_list)
+
+    cameras_per_monitor_split = list(splitlist(source_list, monitor_amount))
+
+    for i in range(0,len(cameras_per_monitor_split)):
+        if len(cameras_per_monitor_split[i]) == 1:
+            cameras_on_monitor_divide = [1]
+        else:
+            cameras_on_monitor_divide = list(splitnum(len(cameras_per_monitor_split[i]),int(len(cameras_per_monitor_split[i])/2)))
+
+        # Divide monitor into N boxes
+        for j in range(0,len(cameras_on_monitor_divide)): # rows
+            for k in range(0,cameras_on_monitor_divide[j]): # columns
+                camera_width = int(monitor_list[i].width/cameras_on_monitor_divide[j])
+                camera_height = int(monitor_list[i].height/len(cameras_on_monitor_divide))
+                x= monitor_list[i].x + k*camera_width
+                y= monitor_list[i].y + j*camera_height
+
+                if (j == 0):
+                    h= y+(1+j)*camera_height
+                else:
+                    h= y+j*camera_height
+                if (k == 0):
+                    w= x+(1+k)*camera_width
+                else:
+                    w= x+k*camera_width
+
+                monitor_box_list.append([x,y,w,h])
+
+    return monitor_box_list
+
+def splitnum(a, n):
+    """
+    Split numbers into even divided numbers
+    """
+    num, div = a, n
+    return (num // div + (1 if x < num % div else 0)  for x in range (div))
+
+def splitlist(a, n):
+    """
+    Simple split array into even sizes
+    """
+    k, m = divmod(len(a), n)
+    return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
+
+def create_instances( source_list , monitor_list):
     '''
     Create instances of system
     @param get list of sources, int for webcams and str for rtsp
     '''
-    amount = len(source_list)
-    shared_variables = Shared_Variables(amount = amount)
+    camera_amount = len(source_list)
+    shared_variables = Shared_Variables(amount = camera_amount)
+    monitor_box_list = split_monitors(monitor_list, source_list)
 
     # start show all detection crop images thread
-    Vizualise_Detections(shared_variables=shared_variables).start()
+    if SHOW_ALL_PERSONS:
+        Vizualise_Detections(shared_variables=shared_variables).start()
 
-    image_new_line = 0
-    image_new_column = 0
+    for i in range(0, camera_amount):
 
-    for i in range(0, amount):
-        if (type(source_list[i]) == type(int())):
+        # Create camera stream
+        cam = Camera(id = i, cam_id=source_list[i], shared_variables=shared_variables, DETECTION_OPTIMIZE_SIZE=DETECTION_OPTIMIZE_SIZE).start()
 
-            cam = Web_Camera(id = i, cam_id=source_list[i], shared_variables=shared_variables).start()
-        else:
-            cam = Ip_Camera(id = i, address = source_list[i], shared_variables=shared_variables).start()
-
+        # Start Object detection on camera
         Obj_Detection( id = i, shared_variables=shared_variables).start()
 
-        if show_on_other_monitor:
-            if image_new_column*(cam.IMAGE_WIDTH*2) - MONITOR_WIDTH > 0: # new line out of screensize
-
-                image_new_line+=1
-                image_new_column= 0
-
-            Vizualise(id = i, shared_variables=shared_variables, pos = [image_new_column*cam.IMAGE_WIDTH-MONITOR_WIDTH, MONITOR_OFFSET + image_new_line*MONITOR_HEIGHT/2 ]).start()
+        # Set Visualization mode
+        if UTILIZE_ALL_MONITOR_SPACE:
+            Vizualise(id = i, shared_variables=shared_variables, pos = monitor_box_list[i]).start()
+        elif VISUALIZATION_OFFSET_AND_SIZE:
+            Vizualise(id = i, shared_variables=shared_variables, pos = VISUALIZATION_OFFSET_AND_SIZE).start()
         else:
             Vizualise(id = i, shared_variables=shared_variables).start()
 
-        print("Created instance ", i," with camera, detection and vizualisation.")
 
-        image_new_column += 1
+        print("Created instance ", i," with camera, detection and vizualisation.")
 
 
 # Main start here
 if __name__ == "__main__":
-    print("Starting Program: Number of Persons in Room")
-    print("Please hold on while we recieve cameras and start detection threads...")
+    f = Figlet(font='slant')
+    print (f.renderText('Number of Persons in Room'))
+    print("Please hold on while we receive cameras and start detection threads...")
+
+    print("Collecting Monitor information...")
+
+    print("----- Print Monitor List -----")
+    monitor_list = detect_monitors()
+    print(monitor_list)
+    print("----- Monitor List End -----")
 
     print("Setting up source_list...")
 
     print("Adding local cameras...")
-    source_list = [ 0]
+
     if use_arlo:
         print("Waiting for Arlo cameras...")
         try:
@@ -109,4 +178,4 @@ if __name__ == "__main__":
     print("----- Source list end -----")
 
     print("Creating all instances... this might take a while!")
-    create_instances( source_list)
+    create_instances(source_list, monitor_list)

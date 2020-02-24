@@ -1,0 +1,7 @@
+tensorflow>==2.0.0
+pyfiglet>==0.7.6
+pyarlo>==0.1.9
+screeninfo>==0.6.1
+opencv-python>==3.4.1.15
+arlo>==1.2.33
+Pillow>==2.2.2

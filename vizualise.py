@@ -119,12 +119,12 @@ class Vizualise(Thread):
                                 amount += 1
 
                         # easy filter
-                        # collect 10 values and use median
+                        # collect 15 values and use median
                         if self.filter:
                             f_counter += 1
                             filter_list.append(amount)
 
-                            if f_counter >= 10:
+                            if f_counter >= 15:
                                 filter_list.sort()
                                 self.shared_variables.number_of_persons = statistics.median(filter_list)
                                 filter_list = list()
@@ -134,6 +134,9 @@ class Vizualise(Thread):
                             # Save amount
                             self.shared_variables.number_of_persons = amount
 
+                    if self.pos is not None:
+                        frame = cv2.resize(frame,(self.pos[2]-self.pos[0], self.pos[3]-self.pos[1]) )
+
                     cv2.putText(frame, str(self.shared_variables.number_of_persons), (10,100), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
                     cv2.imshow(str(self.id), frame)
 
@@ -141,6 +144,7 @@ class Vizualise(Thread):
 
 
                         cv2.moveWindow(str(self.id), self.pos[0],self.pos[1])  # Move it to
+
                         moved = True
 
                     if cv2.waitKey(1) & 0xFF == ord('q'):
