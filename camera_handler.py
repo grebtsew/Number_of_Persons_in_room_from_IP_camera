@@ -1,12 +1,13 @@
 import cv2
 from threading import Thread
 from shared_variables import OutputFrame
+import time
 
 class Camera(Thread):
 
     IMAGE_WIDTH = 420
     IMAGE_HEIGHT = 310
-
+    MAX_FAILED_CAPTURES = 10
     def __init__(self,cam_id, DETECTION_OPTIMIZE_SIZE, name=None, id = 0, shared_variables = None, ):
         Thread.__init__(self)
         self.name = name
@@ -20,7 +21,18 @@ class Camera(Thread):
         self.shared_variables.OutputFrame_list.append(OutputFrame(self.IMAGE_HEIGHT, self.IMAGE_WIDTH))
 
     def run(self):
-        cap = cv2.VideoCapture(self.cam_id)
+        test_counter = 0
+        try:
+            cap = cv2.VideoCapture(self.cam_id)
+        except Exception as e:
+
+            print("Failed to capture camera " + str(self.cam_id) + " will retry in 2 seconds")
+            time.sleep(2)
+            test_counter+=1
+            if test_counter > self.MAX_FAILED_CAPTURES:
+                print("Failed captures has exceided the MAX FAILED CAPTURES treshhold, will now stop trying to connect to: "+ str(self.cam_id))
+            else:
+                self.run()
         try:
             while True:
 

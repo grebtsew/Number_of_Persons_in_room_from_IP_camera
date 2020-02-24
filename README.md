@@ -13,38 +13,6 @@ A multithreaded program that calculate and detect number of persons in a room fr
 # Install & Run
 This part describe the installation and running process.
 
-## Install Docker
-Firstly install Docker on your device.
-
-```
-# Build Container
-docker build . --tag=persons-in-room:1.0
-
-# Show downloaded & built images
-docker images
-```
-
-## Run Docker (Windows)
-Now we need to install a xLauncher for windows in order to allow docker to use a gui.
-
-I recommend installing vcxsrv.
-
-Useful and intresting tutorial on this subject:
-https://dev.to/darksmile92/run-gui-app-in-linux-docker-container-on-windows-host-4kde
-
-When a xLauncher is installed run the container with the following command:
-```
-docker run -ti --rm -e DISPLAY=127.0.0.1:0.0 persons-in-room:1.0 bash
-```
-
-## Run Docker (Linux/Ubuntu)
-This all is a little more simple on linux. Run the following command:
-```
-docker run -ti --rm -e DISPLAY=127.0.0.1:0.0 -v /tmp/.X11-unix:/tmp/.X11-unix persons-in-room:1.0 bash
-```
-Useful link:
-https://linoxide.com/linux-how-to/run-gui-apps-docker-container/
-
 ## Install Program locally
 Here we describe how to install the implementation on your local computer.
 

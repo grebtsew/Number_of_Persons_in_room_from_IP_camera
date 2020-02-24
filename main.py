@@ -11,15 +11,18 @@ from obj_detection import Obj_Detection
 from threading import Thread
 from pyfiglet import Figlet
 from screeninfo import get_monitors
+import os, re
+
 
 """
-Change These Variables
+Change These Variables, some functions won't work while running in docker!
 """
 source_list = [ 0 ] # these most be openable by cv2.VideoCapture!
 
 # Set both these to False in order to use default image sizes
 UTILIZE_ALL_MONITOR_SPACE = True # Set this to maximize visual size of all images
 VISUALIZATION_OFFSET_AND_SIZE = [0,0,640,480] # If UTILIZE_ALL_MONITOR_SPACE is false, use this size instead, set to False if you want all screen to load on eachother with camera default size.
+MONITOR_INDEX_LIST = False # fill this list with the index numbers of monitors to use [1 2 3]
 
 SHOW_ALL_PERSONS = False # Decide if you want to show all cropped images of detected persons
 
@@ -29,18 +32,37 @@ PASSWORD = ''
 
 DETECTION_OPTIMIZE_SIZE = [640,480] # Set size of images before prediction, Set to None if you want to use full size images
 
+
 """
 ----- PROGRAM CODE -----
 """
+path = "/proc/" + str(os.getpid()) + "/cgroup"
+
+def is_docker():
+  if not os.path.isfile(path): return False
+  with open(path) as f:
+    for line in f:
+      if re.match("\d+:[\w=]+:/docker(-[ce]e)?/\w+", line):
+        return True
+    return False
 
 def detect_monitors():
     return get_monitors()
+
+def get_monitors_to_use(monitor_list, MONITOR_INDEX_LIST):
+    if MONITOR_INDEX_LIST:
+        res_list = []
+        for i in range(0,len(monitor_list)):
+            res_list.append(monitor_list[MONITOR_INDEX_LIST[i]])
+    else:
+        return monitor_list
 
 def split_monitors(monitor_list, source_list):
 
     # This function is an algoritm for splitting up any amount of screens into even boxes.
     monitor_box_list = []
     camera_amount = len(source_list)
+    monitor_list = get_monitors_to_use(monitor_list, MONITOR_INDEX_LIST)
     monitor_amount = len(monitor_list)
 
     cameras_per_monitor_split = list(splitlist(source_list, monitor_amount))
@@ -93,7 +115,8 @@ def create_instances( source_list , monitor_list):
     '''
     camera_amount = len(source_list)
     shared_variables = Shared_Variables(amount = camera_amount)
-    monitor_box_list = split_monitors(monitor_list, source_list)
+    if not is_docker():
+        monitor_box_list = split_monitors(monitor_list, source_list)
 
     # start show all detection crop images thread
     if SHOW_ALL_PERSONS:
@@ -125,12 +148,19 @@ if __name__ == "__main__":
     print (f.renderText('Number of Persons in Room'))
     print("Please hold on while we receive cameras and start detection threads...")
 
-    print("Collecting Monitor information...")
+    if is_docker():
+        print("Running on docker!")
+        UTILIZE_ALL_MONITOR_SPACE = False # Set this to maximize visual size of all images
+        VISUALIZATION_OFFSET_AND_SIZE = False # If UTILIZE_ALL_MONITOR_SPACE is false, use this size instead, set to False if you want all screen to load on eachother with camera default size.
+        MONITOR_INDEX_LIST = False # fill this list with the index numbers of monitors to use [1 2 3]
+        monitor_list = None
+    else:
+        print("Collecting Monitor information...")
 
-    print("----- Print Monitor List -----")
-    monitor_list = detect_monitors()
-    print(monitor_list)
-    print("----- Monitor List End -----")
+        print("----- Print Monitor List -----")
+        monitor_list = detect_monitors()
+        print(monitor_list)
+        print("----- Monitor List End -----")
 
     print("Setting up source_list...")
 
