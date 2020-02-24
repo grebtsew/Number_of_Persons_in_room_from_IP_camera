@@ -10,18 +10,17 @@ from vizualise_detections import Vizualise_Detections
 from obj_detection import Obj_Detection
 from threading import Thread
 from pyfiglet import Figlet
-from screeninfo import get_monitors
 import os, re
 
 
 """
 Change These Variables, some functions won't work while running in docker!
 """
-source_list = [ 0 ] # these most be openable by cv2.VideoCapture!
+source_list = [ 0] # these most be openable by cv2.VideoCapture!
 
 # Set both these to False in order to use default image sizes
-UTILIZE_ALL_MONITOR_SPACE = True # Set this to maximize visual size of all images
-VISUALIZATION_OFFSET_AND_SIZE = [0,0,640,480] # If UTILIZE_ALL_MONITOR_SPACE is false, use this size instead, set to False if you want all screen to load on eachother with camera default size.
+UTILIZE_ALL_MONITOR_SPACE = False # Set this to maximize visual size of all images
+VISUALIZATION_OFFSET_AND_SIZE = False # If UTILIZE_ALL_MONITOR_SPACE is false, use this size instead, set to False if you want all screen to load on eachother with camera default size.
 MONITOR_INDEX_LIST = False # fill this list with the index numbers of monitors to use [1 2 3]
 
 SHOW_ALL_PERSONS = False # Decide if you want to show all cropped images of detected persons
@@ -46,8 +45,97 @@ def is_docker():
         return True
     return False
 
+class Monitor():
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+    name: ""
+
+def getParenthesis(texte):
+    content = None
+    p1 = texte.find('(')
+    if p1 >= 0:
+        p2 = texte.find(')')
+        if p2 > p1:
+            content = texte[p1:p2+1]
+    return content
+
+def monitorsInfo():
+    import subprocess
+    commande = ['xrandr','--listmonitors']
+    res = subprocess.check_output(commande, shell=True).decode().split('\n')
+
+    monitors = {}
+
+    for l in res:
+        if len(l) > 1:
+            if l[0] != ' ':
+                if l.split()[0] == l.split()[0].upper():
+
+                    options = getParenthesis(l)
+                    if options:
+                        l = l.replace(options, '')
+                    z = l.split()
+
+                    # this is a connector
+                    name = z[0]
+                    conn = None
+                    primary = None
+                    geo = None
+                    size = None
+                    width = height = offsetx = offsety = None
+                    if z[1].lower() == 'connected':
+                        conn = True
+                        # monitor in use :-)
+                    else:
+                        # screeen connection exists, no screen used
+                        conn = False
+                    # for connected screens : get extra data
+                    if conn:
+                        if z[2].lower() == 'primary':
+                            primary = True
+                            z.pop(2)
+                        # other data for connected screeens
+                        geo = z[2]   # get rid of extra 'primary'
+                        size = ''.join(z[3:])
+                        # get width and height
+                        z = geo.split('+')
+                        offsetx = int(z[1])
+                        offsety = int(z[2])
+                        z = z[0].split('x')
+                        width = int(z[0])
+                        height = int(z[1])
+
+
+                    # create a dict per monitor
+                    d = {}
+                    d['name'] = name
+                    d['connected'] = conn
+                    d['primary'] = primary
+                    d['geometry'] = geo
+                    d['options'] = options
+                    d['size'] = size
+                    d['width'] = width
+                    d['height'] = height
+                    d['offsetx'] = offsetx
+                    d['offsety'] = offsety
+
+                    monitors[name] = d
+
+    return monitors
 def detect_monitors():
-    return get_monitors()
+    if os.name == 'nt':
+        from screeninfo import get_monitors
+        return get_monitors()
+    else:
+        # Linux command
+        monitor_list = []
+        monitors = monitorsInfo()
+        for monitor in monitors:
+            if monitor["connected"]:
+                #monitor exist
+                monitor_list.append(Monitor(x = monitor["offsetx"], y=monitor["offsety"], width=monitor["width"], height=monitor["height"]))
 
 def get_monitors_to_use(monitor_list, MONITOR_INDEX_LIST):
     if MONITOR_INDEX_LIST:
