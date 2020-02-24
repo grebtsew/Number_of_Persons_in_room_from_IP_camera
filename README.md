@@ -1,5 +1,5 @@
 # Detect and calculate number of persons in room from several IP camera in real time using Tensorflow
-A multithreaded program that calculate and detect number of persons in a room from an arbitary amount of cameras with Tensorflow object detection.
+A multithreaded program that calculate and detect number of persons in a room from an arbitrary amount of cameras with Tensorflow object detection.
 
 <p align="center" >
   <img width="200" height="200" src="images/arlo.jpg">
@@ -12,6 +12,24 @@ A multithreaded program that calculate and detect number of persons in a room fr
 
 # Install & Run
 This part describe the installation and running process.
+
+## Install Program locally
+Here we describe how to install the implementation on your local computer.
+
+1. Install python
+
+2. Install required packages
+```
+pip3 install -r requirements.txt
+```
+3. Done!
+
+## Run Program locally
+1. Change variables in "main.py".
+2. Run main.py:
+```
+python3 main.py
+```
 
 ## Install Docker
 Firstly install Docker on your device.
@@ -45,24 +63,6 @@ docker run -ti --rm -e DISPLAY=127.0.0.1:0.0 -v /tmp/.X11-unix:/tmp/.X11-unix pe
 Useful link:
 https://linoxide.com/linux-how-to/run-gui-apps-docker-container/
 
-## Install Program locally
-Here we describe how to install the implementation on your local computer.
-
-1. Install python
-
-2. Install required packages
-```
-pip3 install -r requirements.txt
-```
-3. Done!
-
-## Run Program locally
-1. Change variables in "main.py".
-2. Run main.py:
-```
-python3 main.py
-```
-
 # What exactly does this program do?
 Here we describe what this implementation actually does!
 
@@ -85,7 +85,7 @@ This method is mainly used to make sure that a person is not calculated several 
 ## The System Structure
 
 <p align="center" >
-  <img width="400" height="400" src="images/NumberOfPersonsInRoom.png">
+  <img width="800" height="400" src="images/NumberOfPersonsInRoom.png">
 </p>
 
 # Contributions
