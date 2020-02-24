@@ -39,7 +39,7 @@ class Vizualise(Thread):
         tresh = 0.8 # decide tresh for detection precision
         f_counter = 0
         filter_list = list()
-        while True:
+        while self.shared_variables.running_status_list[self.id]:
             if self.shared_variables.OutputFrame_list[self.id] is not None:
                 frame = self.shared_variables.OutputFrame_list[self.id].frame
 
@@ -105,7 +105,6 @@ class Vizualise(Thread):
                                             # Save image
                                             crop_images.append(crop_img)
 
-
                             i += 1
 
                         # Save images
@@ -137,7 +136,7 @@ class Vizualise(Thread):
                     if self.pos is not None:
                         frame = cv2.resize(frame,(self.pos[2]-self.pos[0], self.pos[3]-self.pos[1]) )
 
-                    cv2.putText(frame, str(self.shared_variables.number_of_persons), (10,100), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+                    cv2.putText(frame, str(self.shared_variables.number_of_persons), (10,150), cv2.FONT_HERSHEY_SIMPLEX, 5, 255,10, cv2.LINE_AA)
                     cv2.imshow(str(self.id), frame)
 
                     if self.moved is False and self.pos is not None:
@@ -148,6 +147,8 @@ class Vizualise(Thread):
                         moved = True
 
                     if cv2.waitKey(1) & 0xFF == ord('q'):
+                        self.shared_variables.running_status_list[self.id] = False
                         break
 
+        print("Shuting down visualisation of instance " + str(self.id))
         cv2.destroyAllWindows()

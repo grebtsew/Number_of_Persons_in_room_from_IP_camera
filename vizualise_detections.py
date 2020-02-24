@@ -12,7 +12,7 @@ class Vizualise_Detections(Thread):
         self.shared_variables = shared_variables
 
     def run(self):
-        while True:
+        while self.shared_variables.running_status_list[self.id]:
             if self.shared_variables.image_of_detections is not None:
                 image = None
                 k = 0
@@ -22,7 +22,8 @@ class Vizualise_Detections(Thread):
                             cv2.imshow("detect"+str(k), img)
                             k+=1
                             if cv2.waitKey(1) & 0xFF == ord('q'):
+                                self.shared_variables.running_status_list[self.id] = False
                                 return
                 time.sleep(1)
-
+        print("Shuting down object visualisation of instance " + str(self.id))
         cv2.destroyAllWindows()

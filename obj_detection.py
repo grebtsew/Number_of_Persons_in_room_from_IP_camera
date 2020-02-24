@@ -4,7 +4,7 @@ from utils import label_map_util
 import numpy as np
 from threading import Thread
 import os
-
+import cv2
 
 class Obj_Detection(Thread):
 
@@ -16,11 +16,15 @@ class Obj_Detection(Thread):
     PATH_TO_LABELS = os.path.join(CWD_PATH,'object_detection', 'data', 'mscoco_label_map.pbtxt')
     NUM_CLASSES = 90
 
-    def __init__(self, id, model = 'ssd_mobilenet_v1_coco_11_06_2017/frozen_inference_graph.pb', name=None, shared_variables = None ):
+    def __init__(self, id,DETECTION_OPTIMIZE_SIZE, model = 'ssd_mobilenet_v1_coco_11_06_2017/frozen_inference_graph.pb', name=None, shared_variables = None ):
         Thread.__init__(self)
         self.name = name
         self.shared_variables = shared_variables
         self.id = id
+        if DETECTION_OPTIMIZE_SIZE:
+            self.IMAGE_WIDTH = DETECTION_OPTIMIZE_SIZE[0]
+            self.IMAGE_HEIGHT = DETECTION_OPTIMIZE_SIZE[1]
+
 
     def load_model(self):
         # Load modell
@@ -44,10 +48,10 @@ class Obj_Detection(Thread):
 
         sess = tf.compat.v1.Session(graph=detection_graph)
 
-        print("Starting detection")
-        while True:
+        print("Starting detection on instance " + str(self.id))
+        while self.shared_variables.running_status_list[self.id]:
             if self.shared_variables.OutputFrame_list[self.id] is not None:
-                frame = self.shared_variables.OutputFrame_list[self.id].frame
+                frame = cv2.resize(self.shared_variables.OutputFrame_list[self.id].frame,(self.IMAGE_WIDTH, self.IMAGE_HEIGHT))
 
                 if( frame is not None):
                     image_np = frame
@@ -68,3 +72,4 @@ class Obj_Detection(Thread):
                     self.shared_variables.OutputFrame_list[self.id].boxes = sess.run(
                       [boxes, scores, classes, num_detections],
                       feed_dict={image_tensor: image_np_expanded})
+        print("Shuting down detections for instance " + str(self.id))

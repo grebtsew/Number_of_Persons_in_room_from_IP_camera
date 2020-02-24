@@ -5,6 +5,7 @@ ENV HOME_PATH=/home/program/
 RUN mkdir -p $HOME_PATH
 COPY ./ $HOME_PATH
 
+
 # Install needed programs
 RUN apt-get update && \
 	  apt-get install -y \
