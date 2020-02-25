@@ -4,11 +4,28 @@ A multithreaded program that calculate and detect number of persons in a room fr
 <p align="center" >
   <img width="200" height="200" src="images/arlo.jpg">
   <img width="200" height="200" src="images/ip1.jpg">
+  <img width="200" height="200" src="images/ip4.jpg">
+  <img width="200" height="200" src="images/ip5.jpg">
+
 </p>
 <p align="center" >
 <img width="200" height="200" src="images/ip2.jpg">
 <img width="200" height="200" src="images/ip3.jpg">
+<img width="200" height="200" src="images/ip7.jpg">
+<img width="200" height="200" src="images/ip6.jpg">
+
 </p>
+
+# Demo
+The demo below visualize how the program looks from two cameras and once depth camera. The fourth camera demonstrates what happens if a camera can't be captured by openCV. NOTE: lighting and the usage of identical cameras are crucial for performance!
+
+![demo](images/demo.gif)
+
+
+The demo below visualize the usage of a vast amount of cameras. NOTE: close program by pressing "Q" button.
+
+![demo2](images/demo2.gif)
+
 
 # Install & Run
 This part describe the installation and running process.

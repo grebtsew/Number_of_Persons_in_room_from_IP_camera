@@ -16,7 +16,7 @@ from monitor import *
 """
 Change These Variables, some functions won't work while running in docker!
 """
-source_list = [ 0,1,2,3,4]
+source_list = [0]
 
 # Set both these to False in order to use default image sizes
 UTILIZE_ALL_MONITOR_SPACE = True # Set this to maximize visual size of all images

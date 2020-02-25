@@ -10,6 +10,20 @@ class Monitor(): # Monitor struct
     def __str__(self):
         return self.name +" : "+ str(self.x) + " " + str(self.y) + " " + str(self.width) + " "+ str(self.height)
 
+def squarit(n: int):
+    """
+    Code from Stackoverflow @CedricDruck
+    """
+    import math
+    size = int(math.floor(math.sqrt(n)))
+    ans = [n//size]*size
+    for i in range(n-n//size*size):
+        ans[i] += 1
+    return size, ans
+
+for i in range(4, 25):
+  print(f'{i}: {squarit(i)}')
+
 def getParenthesis(texte):
     content = None
     p1 = texte.find('(')
