@@ -1,5 +1,5 @@
 # Detect and calculate number of persons in room from several IP camera in real time using Tensorflow
-A multithreaded program that calculate and detect number of persons in a room from an arbitrary amount of cameras with Tensorflow object detection.
+A multithreaded program that calculate and detect number of persons in a room from an arbitrary amount of cameras with **Tensorflow** object detection.
 
 <p align="center" >
   <img width="200" height="200" src="images/arlo.jpg">
@@ -17,12 +17,12 @@ A multithreaded program that calculate and detect number of persons in a room fr
 </p>
 
 # Demo
-The demo below visualize how the program looks from two cameras and once depth camera. The fourth camera demonstrates what happens if a camera can't be captured by openCV. NOTE: lighting and the usage of identical cameras are crucial for performance!
+The demo below visualize how the program looks from two cameras and one depth camera. The fourth camera demonstrates what happens if a camera-source can't be captured by openCV. NOTE: lighting and the usage of identical cameras are crucial for performance!
 
 ![demo](images/demo.gif)
 
 
-The demo below visualize the usage of a vast amount of cameras. NOTE: close program by pressing "Q" button.
+The demo below visualize the usage of a vast amount of cameras. NOTE: Close program windows by pressing "Q" button.
 
 ![demo2](images/demo2.gif)
 
