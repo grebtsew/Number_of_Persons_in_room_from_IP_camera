@@ -17,7 +17,7 @@ A multithreaded program that calculate and detect number of persons in a room fr
 </p>
 
 # Demo
-The demo below visualize how the program looks from two cameras and one depth camera. The fourth camera demonstrates what happens if a camera-source can't be captured by openCV. NOTE: lighting and the usage of identical cameras are crucial for performance!
+The demo below visualize how the program looks from two ip cameras and one realsense depth camera. The fourth camera demonstrates what happens if a camera-source can't be captured by openCV. NOTE: lighting and the usage of identical cameras are crucial for detection performance!
 
 ![demo](images/demo.gif)
 
@@ -57,7 +57,7 @@ OpenCV is used to collect and visualize the streams.
 
 ## Auto Screen Splitting
 This implementation also contains a auto screen splitter. Letting you add an arbitary amount of cameras in the
-source_list. The camera streams will be evenly shared among all screen connected to the computer.
+source_list. The camera streams will be evenly shared among all screens connected to the computer.
 
 ## Tensorflow Object Detection
 A simple tensorflow object detection is used. It is a faster-rcnn trained on the COCO-dataset.
